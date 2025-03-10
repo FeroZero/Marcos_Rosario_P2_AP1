@@ -8,6 +8,35 @@ namespace Marcos_Rosario_P2_AP1.DAL
 	{
 		public Context(DbContextOptions<Context> options) : base(options) { }
 
-		public DbSet<Modelos> Models { get; set; }
+		public DbSet<Ciudades> Ciudades { get; set; }
+		public DbSet<Cursos> Cursos { get; set; }
+		public DbSet<CursosDetalle> CursosDetalle { get; set; }
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			modelBuilder.Entity<Ciudades>().HasData(
+				new List<Ciudades>()
+				{
+					new()
+					{
+						CiudadId = 1,
+						Nombre = "Tenares",
+					},
+					new()
+					{
+						CiudadId = 2,
+						Nombre = "San Fracisco de Macoris"
+					},
+					new()
+					{
+						CiudadId = 3,
+						Nombre = "Santiago"
+					}
+				}
+				
+				
+			);
+			base.OnModelCreating(modelBuilder);
+		}
 	}
 }

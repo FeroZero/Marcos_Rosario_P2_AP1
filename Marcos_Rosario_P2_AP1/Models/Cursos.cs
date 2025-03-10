@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Marcos_Rosario_P2_AP1.Models
 {
@@ -18,5 +19,13 @@ namespace Marcos_Rosario_P2_AP1.Models
 		[Required]
 		[Range(0, 1000000,ErrorMessage = "Limite Excedido.")]
 		public double Monto { get; set; }
+
+		[InverseProperty("Cursos")]
+		public virtual ICollection<CursosDetalle> Detalle { get; set; } = new List<CursosDetalle>();
+
+		[ForeignKey("CiudadId")]
+		[InverseProperty("Cursos")]
+		public int Ciudadid { get; set; }
+		public virtual Ciudades Ciudad { get; set; }
 	}
 }
