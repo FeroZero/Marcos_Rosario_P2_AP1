@@ -20,12 +20,10 @@ namespace Marcos_Rosario_P2_AP1.Models
 		[Range(0, 1000000,ErrorMessage = "Limite Excedido.")]
 		public double Monto { get; set; }
 
-		[InverseProperty("Cursos")]
-		public virtual ICollection<CursosDetalle> Detalle { get; set; } = new List<CursosDetalle>();
+		public virtual ICollection<CursosDetalle> Detalles { get; set; } = new List<CursosDetalle>();
 
 		[ForeignKey("CiudadId")]
-		[InverseProperty("Cursos")]
 		public int Ciudadid { get; set; }
-		public virtual Ciudades Ciudad { get; set; }
+		public virtual Ciudades Ciudades { get; set; }
 	}
 }

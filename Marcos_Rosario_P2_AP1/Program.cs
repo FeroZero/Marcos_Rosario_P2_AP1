@@ -1,4 +1,8 @@
 using Marcos_Rosario_P2_AP1.Components;
+using Marcos_Rosario_P2_AP1.DAL;
+using Marcos_Rosario_P2_AP1.Models;
+using Marcos_Rosario_P2_AP1.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Marcos_Rosario_P2_AP1
 {
@@ -12,7 +16,14 @@ namespace Marcos_Rosario_P2_AP1
             builder.Services.AddRazorComponents()
                 .AddInteractiveServerComponents();
 
-            var app = builder.Build();
+			var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
+
+			builder.Services.AddDbContextFactory<Context>(o => o.UseSqlServer(ConStr));
+
+            builder.Services.AddScoped<CiudadesService>();
+            builder.Services.AddScoped<CursosService>();
+
+			var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())

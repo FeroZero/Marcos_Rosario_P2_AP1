@@ -15,7 +15,9 @@ namespace Marcos_Rosario_P2_AP1.Models
 		public double Valor { get; set; }
 
 		[ForeignKey("CursoId")]
-		[InverseProperty("CursosDetalle")]
-		public virtual Cursos Cobro { get; set; } = null!;
+		public virtual Cursos Cursos { get; set; } = null!;
+
+		[ForeignKey("CiudadId")]
+		public virtual Ciudades Ciudades { get; set; } = null!;
 	}
 }

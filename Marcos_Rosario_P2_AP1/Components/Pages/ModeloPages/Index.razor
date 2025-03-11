@@ -1,5 +1,64 @@
-﻿<h3>Index</h3>
+﻿@page "/Cursos/Index"
+@inject CursosService cursosService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+<PageTitle>Index</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header space-between">
+            <h5 class="card-title">Registro Cursos</h5>
+            <a href="/Cursos/Create" class="btn btn-primary">
+                <span class="bi bi-plus-square mt-3"></span> Crear
+            </a>
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-hover text-center mt-3">
+                <thead class="table table-striped text-black ">
+                    <tr>
+                        <th>CursoId</th>
+                        <th>Asignatura</th>
+                        <th>Fecha</th>
+                        <th>Ciudad</th>
+                        <th>Monto</th>
+                        <th>Opciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var curso in ListaCursos)
+                    {
+                        <tr>
+                            <td> @curso.CursoId</td>
+                            <td> @curso.Asignatura</td>
+                            <td> @curso.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td> @curso.Ciudades?.Nombre</td>
+                            <td> @curso.Monto.ToString("N2")</td>
+
+                            <td class="text-center">
+                                <a href="/Cursos/Edit/@curso.CursoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                <a href="/Cursos/Delete/@curso.CursoId" class="btn btn-outline-danger bi bi-trash"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer space-between">
+            <label class="ms-3"><strong>Cantidad:</strong> @ListaCursos.Count</label>
+            <div class="col-5">
+                <label class="ms-5"><strong>Total:</strong> $@ListaCursos.Sum(c => c.Monto).ToString("N2")</label>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
+    public List<Cursos> ListaCursos { get; set; } = new List<Cursos>();
 
+    protected override async Task OnInitializedAsync()
+    {
+        ListaCursos = await cursosService.Listar(c => c.CursoId > 0);
+    }
 }
+

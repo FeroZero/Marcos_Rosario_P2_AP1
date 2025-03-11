@@ -1,5 +1,194 @@
-﻿<h3>Create</h3>
+﻿@page "/Cursos/Create"
+@inject CursosService cursosService
+@inject CiudadesService ciudadesService
+@inject NavigationManager navigation
+@rendermode InteractiveServer
+
+<PageTitle>Crear Curso</PageTitle>
+
+<EditForm Model="Curso" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Crear Curso</h5>
+            </div>
+
+            <div class="card-body">
+
+                @*Id*@
+                <div class="mb-3">
+                    <label for="CursoId" class="form-label"><strong>ID del Curso</strong></label>
+                    <InputNumber class="form-control" @bind-value="@Curso.CursoId" readonly></InputNumber>
+                </div>
+
+                @* Fecha *@
+                <div class="mb-3">
+                    <label for="Fecha" class="form-label"><strong>Fecha</strong></label>
+                    <InputDate class="form-control" @bind-Value="Curso.Fecha"></InputDate>
+                </div>
+
+                @* Asignatura *@
+                <div class="mb-3">
+                    <label for="Asignatura" class="form-label"><strong>Asignatura</strong></label>
+                    <InputText class="form-control" @bind-Value="Curso.Asignatura"></InputText>
+                    <ValidationMessage For="(() => Curso.Asignatura)" />
+                </div>
+
+                @* Monto *@
+                <div class="mb-3">
+                    <label for="Monto" class="form-label"><strong>Monto</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Curso.Monto" readonly></InputNumber>
+                    <ValidationMessage For="(() => Curso.Monto)" />
+                </div>
+
+                @* Detalles del Curso *@
+                <div class="border border-success p-3 mt-3">
+                    <h4>Detalles de Ciudades</h4>
+                    @if (!string.IsNullOrEmpty(DetalleMensaje))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @DetalleMensaje
+                        </div>
+                    }
+                    <div class="row">
+                        <div class="col-auto input-group align-items-center">
+                            <InputSelect class="form-select" @bind-Value="Detalle.CiudadId">
+                                <option disabled value="0">--- Seleccione una Ciudad ---</option>
+                                @foreach (var ciudad in Ciudades)
+                                {
+                                    <option value="@ciudad.CiudadId">@ciudad.CiudadId -- @ciudad.Nombre</option>
+                                }
+                            </InputSelect>
+
+                            <label class="col-form-label input-group-text">Monto</label>
+                            <InputNumber class="form-control" @bind-Value="Detalle.Valor" placeholder="0.00"></InputNumber>
+
+                            <button type="button" class="btn btn-success bi bi-floppy" @onclick="AgregarDetalle">Agregar detalle</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <table class="table table-light">
+                            <thead class="table-striped">
+                                <tr class="text-center">
+                                    <th>Ciudad</th>
+                                    <th>Monto</th>
+                                    <th>Remover</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var detalle in Curso.Detalles)
+                                {
+                                    <tr class="text-center">
+                                        <td>@detalle.Ciudades?.Nombre</td>
+                                        <td>@detalle.Valor.ToString("C")</td>
+                                        <td>
+                                            <button type="button" @onclick="() => RemoverDetalle(detalle)" class="btn btn-outline-danger bi bi-trash">Remover</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <a href="/Cursos/Index" class="btn btn-outline-primary bi bi-arrow-left mt-3">Volver</a>
+                <button type="submit" class="btn btn-outline-success bi bi-floppy mt-3">Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
 
 @code {
+    public Cursos Curso { get; set; } = new Cursos();
+    public CursosDetalle Detalle { get; set; } = new CursosDetalle();
+    public List<Ciudades> Ciudades { get; set; } = new List<Ciudades>();
+    public string DetalleMensaje { get; set; } = string.Empty;
 
+    protected override async Task OnInitializedAsync()
+    {
+        Ciudades = await ciudadesService.Listar(c => c.CiudadId > 0);
+        Curso.Fecha = DateOnly.FromDateTime(DateTime.Now);
+    }
+
+    private async Task AgregarDetalle()
+    {
+        if (Detalle.CiudadId > 0 && Detalle.Valor > 0)
+        {
+            var ciudadSeleccionada = Ciudades.FirstOrDefault(c => c.CiudadId == Detalle.CiudadId);
+            if (ciudadSeleccionada != null)
+            {
+                var detalleExistente = Curso.Detalles.FirstOrDefault(d => d.CiudadId == Detalle.CiudadId);
+                if (detalleExistente != null)
+                {
+                    detalleExistente.Valor += Detalle.Valor;
+                }
+                else
+                {
+                    Curso.Detalles.Add(new CursosDetalle
+                        {
+                            CiudadId = Detalle.CiudadId,
+                            Valor = Detalle.Valor,
+                        });
+                }
+
+                Curso.Monto = Curso.Detalles.Sum(d => d.Valor);
+                Detalle = new CursosDetalle(); // Reiniciar el detalle
+                DetalleMensaje = string.Empty;
+            }
+            else
+            {
+                DetalleMensaje = "Ciudad no encontrada.";
+            }
+        }
+        else
+        {
+            DetalleMensaje = "Debe seleccionar una ciudad y un monto válido.";
+        }
+    }
+
+    public async Task Guardar()
+    {
+        if (string.IsNullOrWhiteSpace(Curso.Asignatura))
+        {
+            DetalleMensaje = "La asignatura es obligatoria.";
+            return;
+        }
+        if (!Curso.Detalles.Any())
+        {
+            DetalleMensaje = "Debe agregar al menos un detalle de ciudad.";
+            return;
+        }
+
+        var guardado = await cursosService.Guardar(Curso);
+
+        if (guardado)
+        {
+            await Task.Delay(2000);
+            navigation.NavigateTo("/Cursos/Index");
+        }
+        else
+        {
+            DetalleMensaje = "Error al guardar el curso.";
+        }
+    }
+
+    public async void RemoverDetalle(CursosDetalle detalle)
+    {
+        Curso.Detalles.Remove(detalle);
+        Curso.Monto = Curso.Detalles.Sum(d => d.Valor);
+        Detalle.CiudadId = detalle.CiudadId;
+        Detalle.Valor = detalle.Valor;
+
+        var ciudad = await ciudadesService.Buscar(detalle.CiudadId);
+        if (ciudad != null)
+        {
+            ciudad.Monto -= detalle.Valor;
+        }
+    }
 }

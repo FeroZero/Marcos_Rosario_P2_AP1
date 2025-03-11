@@ -36,6 +36,11 @@ namespace Marcos_Rosario_P2_AP1.DAL
 				
 				
 			);
+			modelBuilder.Entity<CursosDetalle>()
+			.HasOne(cd => cd.Cursos)
+			.WithMany(c => c.Detalles)
+			.HasForeignKey(cd => cd.CursoId)
+			.OnDelete(DeleteBehavior.NoAction);
 			base.OnModelCreating(modelBuilder);
 		}
 	}

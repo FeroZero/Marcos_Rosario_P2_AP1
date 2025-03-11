@@ -11,8 +11,6 @@ namespace Marcos_Rosario_P2_AP1.Models
 		public string Nombre { get; set; }
 
 		public double Monto { get; set; }
-
-		[InverseProperty("Ciudades")]
 		public virtual ICollection<Cursos> Cursos { get; set; } = new List<Cursos>();
 	}
 }

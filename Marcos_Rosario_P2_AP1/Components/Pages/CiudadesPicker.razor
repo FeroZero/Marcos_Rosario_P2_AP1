@@ -1,0 +1,58 @@
+﻿<div class="col-auto input-group align-items-center">
+    <label class="col-form-label input-group-text">Seleccione:</label>
+
+    <InputSelect class="form-control form-select" @bind-Value="CiudadId">
+        <option disabled value="0">-- Seleccione una ciudad --</option>
+        @foreach (var ciudad in Ciudades)
+        {
+            <option value="@ciudad.CiudadId">@ciudad.Nombre - $@ciudad.Monto.ToString("N2")</option>
+        }
+    </InputSelect>
+
+    <label class="col-form-label input-group-text">Valor:</label>
+    <InputNumber class="form-control" id="quantity-input" @bind-Value="Valor" min="0" />
+
+    <button type="button" class="btn btn-outline-success bi bi-plus" @onclick="TriggerSelection">Agregar</button>
+</div>
+
+@if (ErrorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ErrorMessage
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<Ciudades> Ciudades { get; set; } = [];
+
+    [Parameter]
+    public int CiudadId { get; set; }
+
+    [Parameter]
+    public double Valor { get; set; }
+
+    [Parameter]
+    public EventCallback<(Ciudades Ciudad, double Valor)> OnCiudadSelected { get; set; } // Event for selection
+
+    private string? ErrorMessage { get; set; } = null;
+
+    private async Task TriggerSelection()
+    {
+        ErrorMessage = null;
+        if (CiudadId > 0)
+        {
+            var ciudadSeleccionada = Ciudades.Single(c => c.CiudadId == CiudadId);
+
+            // Validación: Verificamos que el valor no exceda el monto de la ciudad
+            if (Valor > ciudadSeleccionada.Monto)
+            {
+                ErrorMessage = "El valor no puede ser mayor que el monto disponible de la ciudad";
+                return;
+            }
+
+            // Si todo es correcto, llamamos al evento de selección
+            await OnCiudadSelected.InvokeAsync((ciudadSeleccionada, Valor));
+        }
+    }
+}
